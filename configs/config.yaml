@@ -1,0 +1,60 @@
+# Top-level Hydra config for the task-blocking PoC harness.
+# Composes one option from each config group below, then `_self_`.
+defaults:
+  - model: esm2_35m          # esm2_8m for debug, esm2_35m for the headline runs
+  - data: pfam_default
+  - blocking: mlac_fo
+  - attack: lora             # full_ft for the full-fine-tuning recipe
+  - sweep: budgets
+  - metrics: thresholds
+  - _self_
+
+seed: 0
+device: cuda                 # falls back to cpu automatically if cuda is unavailable
+
+# Evaluation-cost controls. Real Pfam families can have >100k members; held-out
+# metric sets are subsampled so pseudo-perplexity / probe cost stays bounded.
+# These DO NOT change what is trained on — only how many held-out seqs are *scored*.
+eval:
+  max_eval_seqs: 256         # held-out target-family seqs scored for PPL + membership AUROC
+  batch_size: 64
+  masks_per_pass: 8          # stride for pseudo-PPL (higher = faster; 1 = exact per-position)
+  eval_every: 4              # score held-out PPL every K attacker epochs (not every epoch)
+
+# PPL_floor (A fine-tuned toward F to convergence): cap the train subset + epochs so
+# the "best achievable" estimate is tractable on very large families.
+floor:
+  max_train_seqs: 8192
+  max_epochs: 40   # must be >= attack.max_epochs so the floor (best-achievable) is optimized at least as hard as the attacker; raised 10->40 for slow-acquiring metagenomic F (was under-converged at the cap)
+
+# Durability axis: the homolog_augmented attacker gets its budget_n REAL F examples
+# PLUS round(ratio * budget_n) homologs on top (augmentation, not dilution).
+homolog_attack_ratio: 1.0
+
+# Weight-space mechanism probe (scripts/08_weightspace.py): per-layer ‖θ−θ₀‖ and the
+# linear-mode-connectivity barrier on the θ₀→θ_B path.
+weightspace:
+  alphas: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  include_aprime: true   # also report ‖θ_A′−θ₀‖ as a control
+
+tracking:
+  backend: wandb             # wandb | mlflow | none  (none -> local JSONL logger, offline-safe)
+  project: taskblock-poc
+  mode: online               # online | offline | disabled  (wandb-only)
+
+# All filesystem state lives under paths.root. The phase scripts' bootstrap sets
+# TASKBLOCK_ROOT to the repo root; it defaults to '.' (the launch dir) otherwise.
+# Hydra does not chdir (see hydra block), so relative paths stay predictable.
+paths:
+  root: ${oc.env:TASKBLOCK_ROOT,.}
+  data: ${paths.root}/data
+  checkpoints: ${paths.root}/checkpoints
+  results: ${paths.root}/results
+
+hydra:
+  job:
+    chdir: false             # keep cwd at the launch dir so relative paths resolve predictably
+  run:
+    dir: ${paths.root}/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${paths.root}/outputs/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}

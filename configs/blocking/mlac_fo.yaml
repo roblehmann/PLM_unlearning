@@ -1,0 +1,14 @@
+# First-order MLAC/TAR-style task blocking (src/train/taskblock.py).
+inner_steps_K: 4          # K SGD steps of the simulated adversary, from current theta
+eta_inner: 1.0e-4         # adversary (inner) step size
+eta_outer: 5.0e-5         # defender (outer) step size
+lambda_tr: 1.0            # weight on the tamper-resistance term
+forget_margin: 6.0        # cap on the adversary's post-adaptation forget loss, in nats (tune in Phase 4)
+outer_steps: 3000
+retain_batch: 16
+forget_batch: 16
+warmup_steps: 100         # linear warmup on the outer LR
+mlm_probability: 0.15
+grad_clip: 1.0
+log_every: 25
+save_every: 500

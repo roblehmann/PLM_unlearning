@@ -1,0 +1,6 @@
+# ESM-2 8M — debug / smoke model. Tiny, CPU-runnable.
+name: facebook/esm2_t6_8M_UR50D
+short: esm2_8m
+num_layers: 6
+embed_dim: 320          # last_hidden_state width, used by the membership probe
+max_length: 1024

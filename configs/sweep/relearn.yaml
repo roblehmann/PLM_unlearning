@@ -1,0 +1,27 @@
+# Retain-only RELEARNING probe (opt-in): `python scripts/05_full_sweep.py sweep=relearn`.
+#
+# Fine-tune each checkpoint on the retain set R ALONE (zero F examples) and watch the
+# held-out forget-family pseudo-perplexity (F-PPL). If B's F-PPL collapses under
+# benign R-only tuning — toward A's floor — the forget capability was DORMANT
+# (suppressed), not deleted: the cleanest dormant-not-deleted demonstration.
+#
+# Grid is identical to sweep=budgets except adversary_data, so the retain_only
+# multiplier (naive->best F-PPL drop; crossing budget) is directly comparable to the
+# clean / homolog_augmented conditions in the SAME multipliers.csv. Rows append into
+# results/sweep/ alongside the headline run (de-duped on the full cell key), and
+# 06_analyze.py picks them up with no extra flags.
+#
+# Read it as: B = the claim (does F come back?), A = the floor (base never suppressed
+# F, so its F-PPL should stay flat), A_prime = compute-matched control (rules out
+# "any extra retain tuning moves F-PPL"). target_family=F is the test; F_prime is the
+# benign-but-related control for incidental movement.
+#
+# budget_n here counts RETAIN examples (not F examples). To run the cheaper
+# B-vs-A-only contrast, trim models to [A, B] and lora_ranks to [8].
+budgets_n: [16, 64, 256, 1024, 4096]
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]
+models: [A, B, A_prime]
+adversary_data: [retain_only]
+target_family: [F, F_prime]

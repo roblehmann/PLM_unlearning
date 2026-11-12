@@ -1,0 +1,23 @@
+# Sibling-ladder RELEARNING probe on the DECONTAMINATED ladder (2026-09-08 rebuild).
+#
+#   sbatch slurm/10_sibling_ladder_decon_array.sbatch --array=0-23
+#
+# Same design as sweep=sibling_ladder, but the rung corpora are the decontaminated
+# train sets (data/MGnify/pair1_ladder_decon, frozen into
+# runs/MGYF18690_ladder_decon/data/ladder/MGYF0000018690/corpora/): every sequence
+# sharing a source protein with F_train u F_test is gone, as is every sequence matching
+# the rule (pident>=0.9 and alnlen>=150) or (pident>=0.5 and qcov>=0.8). Audited clean in
+# runs/MGYF18690_metagenomic/results/ladder_v3_audit.json (0 rule escapes, 0 shared sources).
+#
+# BUDGETS: the decontaminated corpora are small (rung0 = 168 sequences, the binding
+# floor), and datamodule.subsample silently returns min(n, len) — so any budget above
+# ~168 would re-run the identical corpus and, worse, compare 168 sequences on one rung
+# against 1500 on another. Budgets are therefore capped at 128 <= 168. The previous
+# (contaminated) ladder saturated at >=97% recovery by n=16, so this range covers the
+# region where the answer is decided.
+budgets_n: [16, 64, 128]
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]
+models: [B, A_prime]
+rungs: null          # null -> all 8 rungs from ladder_selected.json

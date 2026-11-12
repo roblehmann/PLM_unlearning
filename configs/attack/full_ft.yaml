@@ -1,0 +1,8 @@
+# Attacker recipe: full fine-tuning toward a target family (MLM objective).
+mode: full_ft
+lr: 1.0e-5
+max_epochs: 40   # raised 20->40: metagenomic F still improving at the cap; patience below early-stops on plateau
+batch_size: 16
+mlm_probability: 0.15
+weight_decay: 0.0
+patience: 5            # early stop on F_test pseudo-perplexity plateau (0 disables)

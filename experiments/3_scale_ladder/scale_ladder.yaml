@@ -1,0 +1,97 @@
+# Scale axis for the 650M spot-check. Every knob the phases read lives here — the phase
+# scripts take CLI overrides but their defaults come from this file, so the experiment is
+# reproducible from config alone. Loaded with OmegaConf; CLI flags win.
+
+scales: [8M, 35M, 150M, 650M]      # 8M/35M reuse cached checkpoints when present
+gate_scales: [8M, 35M, 150M, 650M] # headroom gate runs at every rung (cheap, and gating)
+train_scales: [150M, 650M]         # B + A' trained fresh only here (8M/35M reuse cache)
+m_point_scale: 650M                # the single confirmatory adaptation-cost multiplier
+
+seed: 42                           # global; one order-stable RNG stream per phase
+
+# Anchor family. All rungs share one data root so the ladder varies scale and nothing
+# else. `reselect_candidates` are tried in order (most divergent first) if a scale fails
+# the gate (anchor re-selection).
+#
+# MGnify is the intended anchor and the only F in this repo with real domain-level headroom
+# (0.25 at 8M, 0.31 at 35M on the first gate run). The Pfam Rossmann candidates are kept
+# for provenance but reselection is OFF: base ESM-2 models them cold (headroom 0.02-0.13),
+# so falling through to them only masks a *fixable* MGnify floor-budget shortfall as a false
+# HEADROOM_EXHAUSTED. Turn reselect back on only if MGnify genuinely collapses at 650M.
+data_root: runs/MGYF18690_metagenomic/data
+reselect_candidates:
+  - runs/PF00107_fullchain/data
+  - runs/PF00106_fullchain/data
+
+tau:
+  rho: 0.80
+
+# PPL_floor fit (base fully fine-tuned toward F). The metagenomic anchor acquires slowly:
+# on the first gate run its floor was still descending at the 40-epoch cap (best_epoch=40),
+# so `plateaued()` correctly reported "not converged" and the gate failed a good anchor.
+# The fix for that case is to EXTEND the floor budget, not accept the
+# null; patience still early-stops once F_test actually plateaus, so a larger cap only costs
+# compute when convergence is genuinely slow.
+floor:
+  max_train_seqs: 8192
+  max_epochs: 120                  # was 40; raised so the slow MGnify floor plateaus in-budget
+  patience: 6                      # early-stop when F_test PPL stops improving (avoids burning the cap)
+  lr: 1.0e-5
+  batch_size: 16
+  # bf16 autocast on the floor + base-sweep FIT ONLY (eval stays fp32, so the floor PPL is
+  # measured identically to a pure-fp32 run; params/optimizer stay fp32). Pure-fp32 was
+  # proven infeasible at 650M by the probe_650m_fit run: batch 16x1024 = 70.6 GiB / 37.7 min/epoch
+  # (=75h for a 120-ep floor) and EVERY larger batch OOMs. This is a fit-speed knob, not a
+  # change to the safeguard's numerics — B/A'/attacker training paths never see it.
+  amp: bfloat16
+
+headroom_gate:
+  headroom_rel_min: 0.15           # abort below; target >= 0.25 (MGnify sits at 0.25-0.31)
+  tau_floor_margin_ses_min: 3      # tau must clear the floor by >= 3 bootstrap SEs
+  reselect_on_fail: false          # MGnify-only; see the data_root note above
+  prefer_more_divergent_on_reselect: true
+  boot_resamples: 400
+  floor_plateau_rel_tol: 0.01      # convergence = <1% best-PPL improvement over last window
+  floor_plateau_window: 3
+  base_budgets_n: [16, 64, 256, 1024, 4096, 8192]   # base A must cross tau within this
+
+task_blocking:                     # first-order MLAC/TAR proxy (configs/blocking/mlac_fo.yaml)
+  inner_steps_K: 4
+  inner_lr: 1.0e-4
+  outer_lr: 5.0e-5
+  forget_margin_nats: 6
+  outer_steps: 3000
+  optimizer: adamw
+  lr_schedule: linear_warmup
+
+control_Aprime:
+  match_on: realized_flops         # not step count
+
+attacker:                          # spot-check subset
+  recipe: full_ft                  # LoRA skipped for the spot check
+  budget_lo: 16
+  budget_hi: 4096
+  n_budgets: 6                     # ~6 log-spaced points bracketing A''s crossing
+  bracket_from_aprime: true        # re-centre the grid on the Phase-B crossing when known
+  seeds: [0]                       # 1 seed (vs 3 in the full 35M grid)
+  early_stopping: true             # best held-out target PPL
+  models: [A, A_prime, B]
+
+metrics:
+  random_ceiling: 20               # ESM-2: 20 residue types
+  ppl_aggregation: corpus_level    # total NLL / total scored positions
+  region: recruited_domain_only
+  max_eval_seqs: 256
+  eval_batch_size: 32              # halved vs 35M default: 650M activations
+  masks_per_pass: 8
+  max_length: 1024
+
+mechanism:
+  lmc_alphas_n: 21                 # linspace(0, 1, 21)
+  per_layer_axis: relative_depth   # cross-scale overlay
+  include_aprime: true
+
+# Bounds that stay attached to every reported number.
+bounds:
+  attacker_epoch_capped: true      # M is a LOWER bound on adaptation cost
+  first_order_K4_blocking: true    # a weak M is a lower bound on the method, not a refutation

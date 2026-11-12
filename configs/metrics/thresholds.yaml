@@ -1,0 +1,5 @@
+# Gates applied in analysis (Phase 7) against the pre-registered claim.
+tau_rho: 0.80               # fraction of the achievable acquisition gap that counts as "acquired"
+utility_tolerance: 0.02     # |PPL_benign(B) - PPL_benign(A')| / PPL_benign(A')
+durability_min_multiplier: 3.0
+headline_min_multiplier: 10.0

@@ -1,0 +1,27 @@
+# Sibling-ladder RELEARNING probe (opt-in):
+#   python scripts/10_sibling_ladder_sweep.py sweep=sibling_ladder
+#
+# Fine-tune each checkpoint on a same-clan SIBLING family of F (never F itself), at
+# increasing homology distance from F, and watch the held-out forget-family
+# pseudo-perplexity (F-PPL). If B's F-PPL collapses toward A's floor after tuning on a
+# close neighbour of F — but not a distant one — the block leaks by homology proximity:
+# a benign relative reawakens the "deleted" capability without any F examples. The
+# x-axis is the ladder rung's distance to F (mean identity / cross-HMM bits); the
+# question is at which rung the reawakening stops.
+#
+# Rungs come from data/ladder/${data.forget_family.pfam_id}/ladder_selected.json and the
+# per-rung training corpus is data/ladder/<F>/corpora/<rung_acc>_ft.fasta — the rung's
+# full family with every sequence matching F_test already removed (leakage-free against
+# the F-PPL readout set). F-PPL is scored on the canonical data/splits/F_test.fasta so
+# the numbers are comparable to results/summary.json / results/thresholds.json (τ, floor).
+#
+# Grid mirrors sweep=budgets but replaces (adversary_data × target_family) with `rungs`
+# (all 6 rungs if null -> read from ladder_selected.json). Only B and A_prime are swept:
+# A (base, never blocked) has no blocked capability to reawaken. budget_n counts SIBLING
+# examples drawn from the rung corpus.
+budgets_n: [16, 64, 256, 1024, 4096]
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]
+models: [B, A_prime]
+rungs: null          # null -> all rungs in ladder_selected.json; else a list of accessions

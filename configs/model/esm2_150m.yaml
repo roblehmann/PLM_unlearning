@@ -1,0 +1,6 @@
+# ESM-2 150M — third rung of the scale ladder (experiments/3_scale_ladder).
+name: facebook/esm2_t30_150M_UR50D
+short: esm2_150m
+num_layers: 30
+embed_dim: 640          # last_hidden_state width, used by the membership probe
+max_length: 1024

@@ -1,0 +1,9 @@
+# Full confirmatory sweep for the MGnify metagenomic run. Budgets extended to 16384
+# (B crosses tau alongside A' at 4-8k -> no need for the 42k grid). Full axes.
+budgets_n: [16, 64, 256, 1024, 4096, 8192]   # 16384 dropped: quick-look shows all of A/B/A' cross tau by 8192, and it was ~51% of sweep cost + timed out shards
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]
+models: [A, B, A_prime]
+adversary_data: [clean, homolog_augmented]
+target_family: [F, F_prime]

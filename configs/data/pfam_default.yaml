@@ -1,0 +1,29 @@
+# Data config. Choose the F / F' Pfam ids in Phase 1 by querying Pfam/InterPro against
+# the selection criteria below, then pin them here.
+#
+# Selection criteria: pick a large Pfam CLAN; F = one family
+# with >= min_members and a clean HMM boundary; F' = a sibling family in the SAME
+# clan with >= min_members (the clan relationship is what makes F' an "adjacent task").
+# Both MUST be unambiguously benign (e.g. common metabolic enzyme families) — never
+# hazard-adjacent.
+clan: {pfam_id: CL0063}                              # CL.... the Pfam clan F and F' share
+
+# download_max caps how many family sequences are fetched (these clans have >100k
+# members; the budgets reach only 4096 and eval subsamples to 512, so ~20k is ample
+# and keeps Phase 1 / homolog generation / leakage filtering fast). Set null for all.
+forget_family:   {pfam_id: PF00106, min_members: 3000, download_max: 20000}   # F
+adjacent_family: {pfam_id: PF01593, min_members: 3000, download_max: 20000}   # F' (sibling in `clan`)
+
+retain:     {source: uniref50_subsample, n_sequences: 200000}   # R
+background: {n_sequences: 5000}                   # negatives for the membership probe (non-F, non-F' families)
+
+# Leakage filter: remove any retain sequence too similar to F or F'.
+leakage_filter: {tool: mmseqs2, max_identity_to_F: 0.30, coverage: 0.50}
+
+splits: {forget_train_frac: 0.7, forget_test_frac: 0.3, seed: 0}
+
+# Durability stressor: emit synthetic homologs from the family HMM.
+homolog_generator: {tool: hmmemit, n_per_seed_seq: 5}
+
+max_length: 1024
+toy: false   # true => synthesize tiny offline data (used by smoke + unit tests; no network, no big downloads)

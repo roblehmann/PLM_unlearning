@@ -1,0 +1,7 @@
+# ESM-2 650M — top rung of the scale ladder (experiments/3_scale_ladder); the scale
+# at which the one confirmatory adaptation-cost multiplier M is measured.
+name: facebook/esm2_t33_650M_UR50D
+short: esm2_650m
+num_layers: 33
+embed_dim: 1280         # last_hidden_state width, used by the membership probe
+max_length: 1024

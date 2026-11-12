@@ -1,0 +1,19 @@
+# Retain-only RELEARNING probe, target F ONLY: `python scripts/05_full_sweep.py sweep=relearn_F_only`
+#
+# Fine-tune A / B / A' on the retain set R alone (zero F examples) and score held-out
+# F-PPL — the dormant-not-deleted test (does benign R-tuning reawaken the block?). Rows
+# append into results/sweep/ alongside the clean/homolog durability rows; 06/07 pick them
+# up as another adversary_data condition (fig_retain_only).
+#
+# Trimmed vs relearn.yaml: target_family = [F] only. retain_only trains on R regardless of
+# the scored family, so (retain_only, F_prime) is an IDENTICAL training run to
+# (retain_only, F) — dropping it halves compute for no lost signal on the dormancy question.
+# Grid = 3 models x 3 recipe-ranks x 5 budgets x 3 seeds = 135 cells (~47 GPU-h @ 40 epochs).
+# budget_n counts RETAIN examples.
+budgets_n: [16, 64, 256, 1024, 4096]
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]
+models: [A, B, A_prime]
+adversary_data: [retain_only]
+target_family: [F]

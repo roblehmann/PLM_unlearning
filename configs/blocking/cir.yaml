@@ -1,0 +1,38 @@
+# CIR — Collapse of Irrelevant Representations (src/train/cir.py), the second
+# safeguard alongside mlac_fo. Selected with `blocking=cir` and trained via
+# scripts/03b_train_cir.py (produces the same checkpoints/B + results/B_compute.json,
+# so phases 5–8 are unchanged).
+method: cir
+
+# --- fields the (method-agnostic) compute-matched control A' reads (scripts/04) ---
+eta_outer: 5.0e-5          # retain-side AdamW LR (also the A' continuation LR)
+retain_batch: 16
+mlm_probability: 0.15      # masking for the retain batches + masked PC draws + A'
+warmup_steps: 100          # linear warmup on the retain optimizer
+
+# --- the load-bearing adaptation: WHERE the collapse subspace is estimated ---
+subspace_mode: retain_pca  # retain_pca (A, HEADLINE) | discriminative (A') | forget_pca (B, ablation)
+discriminative_keep_ratio: 2.0   # A' only: keep a shared direction if var_F >= ratio*var_R
+
+# --- PCA / collapse ---
+n_act_pcs: 24              # activation PCs collapsed (grid {0,2,4,8,12,24}; first few matter most)
+n_grad_pcs: 36            # gradient PCs collapsed (grid {12,24,36,48}; expect a plateau)
+collapse_mean: true        # treat the mean as the 0th component, collapse it first
+pc_corpus_seqs: 2048       # sequences cached per epoch for the PCA
+pc_batch: 16
+pc_act_position_policy: all_unmasked   # all_unmasked | masked_only
+pc_grad_mask_draws: 1      # >1 averages the gradient PCA over masked draws (MUDMAN-style stabiliser)
+recompute_pcs_every_epoch: true        # PCs drift as θ moves
+
+# --- update / loss ---
+unlearn_rate: 1.0e-2       # fixed total update-norm = effective unlearning rate (tune in Phase 4)
+layer_band: [3, 4, 5, 6, 7, 8]   # middle band of 12; sweep (analog of Fig. 6c), do not hard-code
+forget_batch: 16
+grad_clip: 1.0
+
+# --- schedule / termination ---
+max_epochs: 50
+steps_per_epoch: 100
+terminate_retain_ppl_ratio: 1.001   # stop at 100.1% of base retain pseudo-PPL (the 0.1% rule)
+log_every: 25
+save_every: 500

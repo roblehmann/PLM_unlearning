@@ -1,0 +1,10 @@
+# Quick-look triage sweep (MGnify metagenomic run): locate where B crosses tau
+# before committing to the full, expensive extended-budget sweep. Clean F only,
+# A/B/A', both recipes, seed 0, budgets bracketing A's ~6000 crossing up to 16384.
+budgets_n: [4096, 8192, 16384]
+seeds: [0]
+recipes: [lora, full_ft]
+lora_ranks: [8]                         # single rank for the triage
+models: [A, B, A_prime]
+adversary_data: [clean]
+target_family: [F]

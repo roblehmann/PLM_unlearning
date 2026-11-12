@@ -1,0 +1,14 @@
+# Denser low-n attacker grid for CIR runs: `python scripts/05_full_sweep.py sweep=cir_budgets`.
+#
+# Identical schema to sweep=budgets, but with the extra low-n budgets {32,128} so the
+# 16–128 region is well resolved. Before reading any M off a CIR run, keep τ
+# above the base model's own forget-PPL floor (see results/thresholds.json from Phase 3)
+# and read the crossing on this denser grid. Rows append into results/sweep/ and
+# 06_analyze.py consumes them with no extra flags.
+budgets_n: [16, 32, 64, 128, 256, 1024, 4096]   # number of F_train examples available to the attacker
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]                     # only varied for the lora recipe
+models: [A, B, A_prime]                 # base / blocked / compute-matched control
+adversary_data: [clean, homolog_augmented]
+target_family: [F, F_prime]

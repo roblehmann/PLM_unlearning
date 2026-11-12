@@ -1,0 +1,8 @@
+# The attacker grid swept in Phase 6. One attack run per cell of the cross product.
+budgets_n: [16, 64, 256, 1024, 4096]   # number of F_train examples available to the attacker
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]                     # only varied for the lora recipe
+models: [A, B, A_prime]                 # base / blocked / compute-matched control
+adversary_data: [clean, homolog_augmented]
+target_family: [F, F_prime]

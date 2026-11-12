@@ -1,0 +1,16 @@
+# CIR durability test on MGnify — 2-ARM sweep (B_cir + A'_cir only).
+#   python scripts/05_full_sweep.py sweep=cir_2arm_F
+#
+# The base-A arm is method-independent and already measured by the mlac_fo durability
+# sweep, so it is DROPPED here and its rows are reused (copied into this run's sweep dir)
+# for the B/A and A'/A columns; the headline B/A' needs only B + A'. F' (specificity) is
+# also dropped for this first CIR pass. Budgets extend to 8192 because A' crosses tau only
+# near ~6k on this slow-acquiring metagenomic family (the 4096 grid would censor A').
+# Grid = 2 models x (lora r8,r32 + full_ft) x 6 budgets x 3 seeds x 2 adversary = 216 cells.
+budgets_n: [16, 64, 256, 1024, 4096, 8192]
+seeds: [0, 1, 2]
+recipes: [lora, full_ft]
+lora_ranks: [8, 32]
+models: [B, A_prime]
+adversary_data: [clean, homolog_augmented]
+target_family: [F]

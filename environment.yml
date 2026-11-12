@@ -1,0 +1,43 @@
+# conda env for the task-blocking PoC.
+#
+#   conda env create -f environment.yml      # or: mamba env create -f environment.yml
+#   conda activate taskblock-poc
+#   pip install -e .                          # makes `import src.*` work everywhere
+#
+# System bio tools (mmseqs2, hmmer, cd-hit) come from bioconda below. On a cluster with
+# environment modules you may instead `module load mmseqs2/14.7 hmmer/3.3.2 cdhit/4.8.1`
+# and drop them from this file.
+name: taskblock-poc
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - pip
+  # ---- system bio tools (leakage filter + homolog generation) ----
+  - mmseqs2
+  - hmmer
+  - cd-hit
+  # ---- python stack via pip ----
+  # NOTE: the default torch wheel may be a cu130 build; if your GPU drivers cap at an
+  # older CUDA (e.g. 570.x -> CUDA 12.8), install a matching build after env creation:
+  #   pip install --force-reinstall torch --index-url https://download.pytorch.org/whl/cu126
+  - pip:
+      - torch>=2.1
+      - transformers>=4.40
+      - peft>=0.10
+      - datasets>=2.18
+      - hydra-core>=1.3
+      - omegaconf>=2.3
+      - wandb>=0.16
+      - numpy>=1.24
+      - scipy>=1.10
+      - scikit-learn>=1.3
+      - biopython>=1.81
+      - pandas>=2.0
+      - matplotlib>=3.7
+      - umap-learn>=0.5.6  # embedding-space UMAP (scripts/13_umap_plot.py)
+      - pyarrow>=14.0      # tidy long-format results table
+      - requests>=2.31     # Pfam / InterPro / EBI REST
+      - tqdm>=4.66
+      - pytest>=7.4

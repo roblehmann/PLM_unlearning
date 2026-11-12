@@ -1,0 +1,6 @@
+# ESM-2 35M — headline model for the reported runs.
+name: facebook/esm2_t12_35M_UR50D
+short: esm2_35m
+num_layers: 12
+embed_dim: 480          # last_hidden_state width, used by the membership probe
+max_length: 1024

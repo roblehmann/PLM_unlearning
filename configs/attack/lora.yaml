@@ -1,0 +1,12 @@
+# Attacker recipe: LoRA fine-tuning toward a target family (MLM objective).
+mode: lora
+lora_rank: 8
+lora_alpha: 16
+lora_dropout: 0.0
+target_modules: [query, key, value, dense]
+lr: 1.0e-4
+max_epochs: 40   # raised 20->40: metagenomic F still improving at the cap; patience below early-stops on plateau
+batch_size: 16
+mlm_probability: 0.15
+weight_decay: 0.0
+patience: 5            # early stop on F_test pseudo-perplexity plateau (0 disables)
