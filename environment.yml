@@ -1,13 +1,13 @@
 # conda env for the task-blocking PoC.
 #
 #   conda env create -f environment.yml      # or: mamba env create -f environment.yml
-#   conda activate taskblock-poc
+#   conda activate plm_unlearning
 #   pip install -e .                          # makes `import src.*` work everywhere
 #
 # System bio tools (mmseqs2, hmmer, cd-hit) come from bioconda below. On a cluster with
 # environment modules you may instead `module load mmseqs2/14.7 hmmer/3.3.2 cdhit/4.8.1`
 # and drop them from this file.
-name: taskblock-poc
+name: plm_unlearning
 channels:
   - conda-forge
   - bioconda

@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "taskblock-poc"
+name = "plm_unlearning"
 version = "0.1.0"
 description = "Measurement harness for second-line (functional-mapping) safeguards on protein sequence models; task blocking as the first instance."
 requires-python = ">=3.10"

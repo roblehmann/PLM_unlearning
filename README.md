@@ -1,4 +1,4 @@
-# taskblock-poc
+# plm_unlearning
 
 Code for measuring how durable a weight-level safeguard on a protein language model is
 against fine-tuning. A safeguard is applied to ESM-2 so that the model loses its ability
@@ -70,7 +70,7 @@ tests/          unit tests
 
 ```bash
 conda env create -f environment.yml
-conda activate taskblock-poc
+conda activate plm_unlearning
 pip install -e .
 ```
 

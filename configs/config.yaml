@@ -39,7 +39,7 @@ weightspace:
 
 tracking:
   backend: wandb             # wandb | mlflow | none  (none -> local JSONL logger, offline-safe)
-  project: taskblock-poc
+  project: plm_unlearning
   mode: online               # online | offline | disabled  (wandb-only)
 
 # All filesystem state lives under paths.root. The phase scripts' bootstrap sets

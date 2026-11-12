@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]                      # repo root (taskblock-poc/)
+ROOT = HERE.parents[1]                      # repo root (plm_unlearning/)
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 os.environ.setdefault("TASKBLOCK_ROOT", str(ROOT))

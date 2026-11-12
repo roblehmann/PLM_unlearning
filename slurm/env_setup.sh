@@ -33,8 +33,8 @@ fi
 if [ -n "${_conda_sh}" ] && [ -f "${_conda_sh}" ]; then
   # shellcheck disable=SC1090
   source "${_conda_sh}"
-  conda activate "${TASKBLOCK_ENV:-taskblock-poc}" \
-    || echo "WARN: could not activate '${TASKBLOCK_ENV:-taskblock-poc}' (create it, or set TASKBLOCK_ENV)"
+  conda activate "${TASKBLOCK_ENV:-plm_unlearning}" \
+    || echo "WARN: could not activate '${TASKBLOCK_ENV:-plm_unlearning}' (create it, or set TASKBLOCK_ENV)"
 else
   echo "WARN: conda.sh not found; set TASKBLOCK_CONDA_SH to your conda's etc/profile.d/conda.sh"
 fi
